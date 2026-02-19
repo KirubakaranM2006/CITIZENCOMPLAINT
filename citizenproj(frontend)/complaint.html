@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Complaints</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Submit Complaint</h2>
+
+    <input type="text" id="title" placeholder="Title" required>
+    <textarea id="description" placeholder="Description" required></textarea>
+    <input type="text" id="category" placeholder="Category" required>
+
+    <!-- PHOTO SELECT OPTION -->
+    <input type="file" id="image" accept="image/*" required>
+
+    <button onclick="submitComplaint()">Submit Complaint</button>
+</div>
+
+<div class="form-container">
+    <h2>All Complaints</h2>
+    <button onclick="loadComplaints()">Load Complaints</button>
+    <ul id="complaintList"></ul>
+</div>
+
+<script>
+const BASE_URL = "http://localhost:8080";
+
+function submitComplaint() {
+
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) {
+        alert("Please register first!");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("title", document.getElementById("title").value);
+    formData.append("description", document.getElementById("description").value);
+    formData.append("category", document.getElementById("category").value);
+    formData.append("file", document.getElementById("image").files[0]);
+
+    fetch(`${BASE_URL}/complaints/user/${userId}`, {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert("Complaint Submitted Successfully!");
+        loadComplaints();
+    })
+    .catch(error => {
+        alert("Error submitting complaint!");
+        console.log(error);
+    });
+}
+
+function loadComplaints() {
+    fetch(`${BASE_URL}/complaints`)
+    .then(response => response.json())
+    .then(data => {
+        const list = document.getElementById("complaintList");
+        list.innerHTML = "";
+
+        data.forEach(c => {
+            const li = document.createElement("li");
+            li.innerText = c.title + " | Status: " + c.status;
+            list.appendChild(li);
+        });
+    })
+    .catch(error => {
+        console.log(error);
+    });
+}
+</script>
+
+</body>
+</html>
